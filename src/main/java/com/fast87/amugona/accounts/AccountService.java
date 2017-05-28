@@ -1,4 +1,4 @@
-package me.whiteship.accounts;
+package com.fast87.amugona.accounts;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +24,13 @@ public class AccountService {
         Account account = modelMapper.map(dto, Account.class);
 
         // TODO 유효한 username인지 판단
+        String username = dto.getUsername();
+        if (repository.findByUsername(username) != null){
+            throw new UserDuplicatedException(username);
+        }
+
+
+
         // TODO password 해싱
 
         Date now = new Date();

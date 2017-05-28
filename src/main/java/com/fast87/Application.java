@@ -1,4 +1,4 @@
-package me.whiteship;
+package com.fast87;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
@@ -18,5 +18,6 @@ public class Application {
     public ModelMapper modelMapper(){
         return new ModelMapper();
     }
+
 
 }

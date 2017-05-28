@@ -1,4 +1,4 @@
-package me.whiteship.accounts;
+package com.fast87.amugona.accounts;
 
 
 import lombok.Getter;
@@ -17,6 +17,7 @@ public class Account {
     @Id @GeneratedValue
     private Long id;
 
+    @Column(unique = true)
     private String username;
 
     private String password;

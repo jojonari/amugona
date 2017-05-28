@@ -1,4 +1,4 @@
-package me.whiteship.accounts;
+package com.fast87.amugona.accounts;
 
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
