@@ -29,8 +29,6 @@ public class AccountService {
             throw new UserDuplicatedException(username);
         }
 
-
-
         // TODO password 해싱
 
         Date now = new Date();
