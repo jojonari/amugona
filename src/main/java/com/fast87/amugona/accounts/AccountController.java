@@ -53,6 +53,7 @@ public class AccountController {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+
     @RequestMapping(value = "/accounts", method = RequestMethod.GET)
     public ResponseEntity getAccounts(Pageable pageable){
         Page<Account> page = repository.findAll(pageable);
