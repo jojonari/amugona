@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.web.bind.annotation.RequestMethod.*;
 
 /**
  * Created by jojonari on 2017. 5. 25..
@@ -30,41 +32,68 @@ public class AccountController {
     @Autowired
     private ModelMapper modelMapper;
 
-    @RequestMapping(value = "/accounts", method = RequestMethod.POST)
+    @RequestMapping(value = "/accounts", method = POST)
     public ResponseEntity createAccount(@RequestBody @Valid  AccountDto.Create account, BindingResult result){
         if (result.hasErrors()){
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setMessage("잘못된 요청입니다");
             errorResponse.setCode("bad.request");
-            return new ResponseEntity(errorResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(errorResponse, BAD_REQUEST);
         }
 
         Account newAccount = service.createAccount(account);
 
 
-        return new ResponseEntity<>(modelMapper.map(newAccount, AccountDto.Response.class), HttpStatus.CREATED);
-    }
-
-    @ExceptionHandler(UserDuplicatedException.class)
-    public ResponseEntity userDuplicatedException(UserDuplicatedException e){
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setMessage(e.getUsername() + "은 중복된 username입니다");
-        errorResponse.setCode("duplicated.username.exception");
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(modelMapper.map(newAccount, AccountDto.Response.class), CREATED);
     }
 
 
-    @RequestMapping(value = "/accounts", method = RequestMethod.GET)
-    public ResponseEntity getAccounts(Pageable pageable){
+    @RequestMapping(value = "/accounts", method = GET)
+    @ResponseStatus(HttpStatus.OK)
+    public PageImpl<AccountDto.Response> getAccounts(Pageable pageable){
         Page<Account> page = repository.findAll(pageable);
         List<AccountDto.Response> content = page.getContent().parallelStream()
                 .map(account -> modelMapper.map(account, AccountDto.Response.class))
                 .collect(Collectors.toList());
 
-        PageImpl<AccountDto.Response> result = new PageImpl<>(content, pageable, page.getTotalElements());
-        return new ResponseEntity<>(result, HttpStatus.OK);
-
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
+    @RequestMapping(value = "/accounts/{id}", method = GET)
+    @ResponseStatus(HttpStatus.OK)
+    public AccountDto.Response getAccount(@PathVariable Long id){
+        Account account = service.getAccount(id);
+        return modelMapper.map(account, AccountDto.Response.class);
+    }
+
+    // 전체업데이트(PUT) VS 부분업데이트(PATCH)
+    @RequestMapping(value = "/accounts/{id}", method = PUT)
+    public ResponseEntity updateAccount(@PathVariable Long id, @RequestBody @Valid AccountDto.Update updateDto,
+                                        BindingResult result){
+        if (result.hasErrors()){
+            return new ResponseEntity(BAD_REQUEST);
+        }
+
+        Account updateAccount = service.updateAccount(id, updateDto);
+        return new ResponseEntity<>(modelMapper.map(updateAccount, AccountDto.Response.class), HttpStatus.OK);
+    }
+
+    @ExceptionHandler(UserDuplicatedException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse userDuplicatedException(UserDuplicatedException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage(e.getUsername() + "은 중복된 username입니다");
+        errorResponse.setCode("duplicated.username.exception");
+        return errorResponse;
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    @ResponseStatus(BAD_REQUEST)
+    public ErrorResponse handleAccountNOtFoundException(AccountNotFoundException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage(e.getId()+"에 해당하는 계정이 없습니다 ");
+        errorResponse.setCode("account.not.found.exception");
+        return errorResponse;
+    }
 
 }
