@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -77,6 +78,14 @@ public class AccountController {
         Account updateAccount = service.updateAccount(id, updateDto);
         return new ResponseEntity<>(modelMapper.map(updateAccount, AccountDto.Response.class), HttpStatus.OK);
     }
+
+
+    @RequestMapping(value = "/accounts/{id}", method = DELETE)
+    public ResponseEntity deleteAccount(@PathVariable Long id){
+        service.deleteAccount(id);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
 
     @ExceptionHandler(UserDuplicatedException.class)
     @ResponseStatus(BAD_REQUEST)

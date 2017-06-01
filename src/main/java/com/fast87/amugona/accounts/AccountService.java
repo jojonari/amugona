@@ -1,5 +1,6 @@
 package com.fast87.amugona.accounts;
 
+
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import java.util.Date;
  */
 @Service
 @Transactional
-@Slf4j()
+@Slf4j
 public class AccountService {
 
 //    private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -30,7 +31,7 @@ public class AccountService {
         // TODO 유효한 username인지 판단
         String username = dto.getUsername();
         if (repository.findByUsername(username) != null){
-            log.error("user Duplicated exception. {}" ,username);
+//            log.error("user Duplicated exception. {}", username);
             throw new UserDuplicatedException(username);
         }
 
@@ -56,5 +57,9 @@ public class AccountService {
             throw new AccountNotFoundException(id);
         }
         return account;
+    }
+
+    public void deleteAccount(Long id) {
+        repository.delete(getAccount(id));
     }
 }
