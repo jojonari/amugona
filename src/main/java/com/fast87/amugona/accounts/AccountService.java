@@ -4,6 +4,7 @@ package com.fast87.amugona.accounts;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +24,13 @@ public class AccountService {
     private AccountRepository repository;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     public Account createAccount(AccountDto.Create dto) {
         Account account = modelMapper.map(dto, Account.class);
-
         // TODO 유효한 username인지 판단
         String username = dto.getUsername();
         if (repository.findByUsername(username) != null){
@@ -35,6 +38,7 @@ public class AccountService {
             throw new UserDuplicatedException(username);
         }
 
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
         // TODO password 해싱
 
         Date now = new Date();
@@ -46,6 +50,7 @@ public class AccountService {
 
     public Account updateAccount(Long id, AccountDto.Update updateDto) {
         Account account = getAccount(id);
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
         account.setPassword(updateDto.getPassword());
         account.setFullName(updateDto.getFullName());
         return repository.save(account);
